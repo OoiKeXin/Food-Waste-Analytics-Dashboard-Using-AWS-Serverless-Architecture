@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>FoodWise Analytics | Global Food Waste Intelligence Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<div id="canvas-container"></div>
+
+<!-- Navigation Bar -->
+<div class="navbar">
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+        <div>
+            <h1>FoodWise Analytics</h1>
+            <p>🌍 Rotate Earth · Click Flags to Compare · Smart Dynamic Analysis</p>
+        </div>
+    </div>
+    <div class="controls">
+        <button id="darkModeToggle" class="btn"><i class="fas fa-moon"></i> Light Mode</button>
+        <button id="resetSelectionBtn" class="btn"><i class="fas fa-eraser"></i> Clear Selection</button>
+    </div>
+</div>
+
+<!-- Selection Panel -->
+<div class="selection-panel">
+    <div class="selected-badge" id="selectedCountriesList">
+        <span style="opacity:0.7;"><i class="fas fa-globe"></i> Rotate the Earth, click on flags to select countries (max 5)</span>
+    </div>
+    <button id="analyzeNowBtn" class="btn btn-primary" disabled><i class="fas fa-chart-line"></i> Deep Dynamic Analysis</button>
+</div>
+
+<!-- Analysis Modal -->
+<div id="analysisModal" class="modal-board">
+    <div class="board-card">
+        <div class="board-header">
+            <h2><i class="fas fa-chart-pie"></i> Smart Dynamic Analysis Report</h2>
+            <button class="close-modal" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="chart-grid">
+            <div class="chart-box"><canvas id="barChartCanvas"></canvas></div>
+            <div class="chart-box"><canvas id="radarChartCanvas"></canvas></div>
+            <div class="chart-box"><canvas id="lineChartCanvas"></canvas></div>
+        </div>
+        <div class="insight-section">
+            <div class="insight-title"><i class="fas fa-table"></i> Detailed Data Comparison Table</div>
+            <table class="data-table">
+                <thead>
+                    <tr><th>Country</th><th>Total Waste</th><th>Household</th><th>Retail</th><th>Food Service</th><th>vs Global</th></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="insight-section">
+            <div class="insight-title"><i class="fas fa-brain"></i> 🔬 Root Cause Analysis (Data-Driven)</div>
+            <div id="rootCauseAnalysis"></div>
+        </div>
+        <div class="insight-section">
+            <div class="insight-title"><i class="fas fa-lightbulb"></i> 💡 Customized Reduction Solutions</div>
+            <div id="solutionAnalysis"></div>
+        </div>
+        <div class="insight-section">
+            <div class="insight-title"><i class="fas fa-chart-line"></i> 📈 Comprehensive Insights & Policy Recommendations</div>
+            <div id="aiInsightText"></div>
+        </div>
+    </div>
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.132.2/build/three.module.js"
+        }
+    }
+</script>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

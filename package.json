@@ -1,0 +1,27 @@
+{
+    "name": "interactive-globe-web",
+    "version": "1.0.0",
+    "description": "A Distributed Global Data Visualisation For Food Waste And Consumption Analysis",
+    "main": "src/js/main.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "three": "^0.132.2",
+        "chart.js": "^4.4.0"
+    },
+    "devDependencies": {
+        "vite": "^2.6.4"
+    },
+    "keywords": [
+        "food-waste",
+        "data-visualization",
+        "3d-globe",
+        "aws",
+        "sustainability"
+    ],
+    "author": "FoodWise Analytics Team",
+    "license": "MIT"
+}
