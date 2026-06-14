@@ -2,6 +2,9 @@
 
 A cutting-edge **interactive 3D globe web application** for visualizing and analyzing food waste data across countries. Built with modern web technologies and designed to provide actionable insights into global food consumption patterns and sustainability challenges.
 
+## Demo
+**http://foodwise-globe-app.s3-website-ap-southeast-2.amazonaws.com
+
 ## ✨ Features
 
 ### 🗺️ Interactive 3D Globe Visualization
