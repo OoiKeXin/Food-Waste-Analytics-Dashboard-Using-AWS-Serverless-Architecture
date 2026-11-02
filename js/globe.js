@@ -22,7 +22,7 @@ export function initGlobe() {
     document.getElementById('canvas-container').appendChild(renderer.domElement);
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.rotateSpeed = 0.8;
+    controls.rotateSpeed = 0.80;
     controls.zoomSpeed = 1.2;
     
     const textureLoader = new THREE.TextureLoader();

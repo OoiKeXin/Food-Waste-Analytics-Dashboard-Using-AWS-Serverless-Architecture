@@ -1,4 +1,4 @@
-Country,combined figures (kg/capita/year),Household estimate (kg/capita/year),Household estimate (tonnes/year),Retail estimate (kg/capita/year),Retail estimate (tonnes/year),Food service estimate (kg/capita/year),Food service estimate (tonnes/year),Confidence in estimate,M49 code,Region,Source
+country,combined figures (kg/capita/year),household estimate (kg/capita/year),household estimate (tonnes/year),retail estimate (kg/capita/year),retail estimate (tonnes/year),food service estimate (kg/capita/year),food service estimate (tonnes/year),confidence in estimate,m49 code,region,source
 Afghanistan,126,82,3109153,16,594982,28,1051783,Very Low Confidence,4,Southern Asia,https://www.unep.org/resources/report/unep-food-waste-index-report-2151
 Albania,127,83,238492,16,45058,28,79651,Very Low Confidence,8,Southern Europe,https://www.unep.org/resources/report/unep-food-waste-index-report-2160
 Algeria,135,91,3918529,16,673360,28,1190335,Very Low Confidence,12,Northern Africa,https://www.unep.org/resources/report/unep-food-waste-index-report-2107

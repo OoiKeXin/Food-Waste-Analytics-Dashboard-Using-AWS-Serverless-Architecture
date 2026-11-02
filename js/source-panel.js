@@ -50,6 +50,10 @@ export function nextSource() {
 export function initSourcePanel() {
     const sourceTabBtn = document.getElementById('sourceTabBtn');
     const sourcePanel = document.getElementById('sourcePanel');
+
+    if (!sourceTabBtn || !sourcePanel) {
+        return;
+    }
     
     sourceTabBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -70,8 +74,11 @@ export function initSourcePanel() {
         }
     });
     
-    document.getElementById('prevSourceBtn').addEventListener('click', prevSource);
-    document.getElementById('nextSourceBtn').addEventListener('click', nextSource);
+    const prevSourceBtn = document.getElementById('prevSourceBtn');
+    const nextSourceBtn = document.getElementById('nextSourceBtn');
+
+    if (prevSourceBtn) prevSourceBtn.addEventListener('click', prevSource);
+    if (nextSourceBtn) nextSourceBtn.addEventListener('click', nextSource);
     
     document.querySelectorAll('.source-badge').forEach(el => {
         el.addEventListener('click', () => {

@@ -16,7 +16,7 @@ const charts = {
 
 // Show loading indicator
 const analyzeBtn = document.getElementById('analyzeNowBtn');
-analyzeBtn.textContent = 'Loading Data...';
+analyzeBtn.textContent = 'Analyze';
 analyzeBtn.disabled = true;
 
 // Load CSV data first, then initialize everything
@@ -44,13 +44,12 @@ document.getElementById('analyzeNowBtn').addEventListener('click', async () => {
         return;
     }
 
-    const res = await fetch("https://rpymqbayaa.execute-api.ap-southeast-2.amazonaws.com/prod/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ countries: selectedCountries })
-    });
-
-    const apiData = await res.json();
+    const apiData = {
+        countries: window.foodWasteData.filter(country => 
+            selectedCountries.includes(country.country)
+        ),
+        globalAvg: window.GLOBAL_AVG
+    }
 
     renderDynamicAnalysis(apiData, charts);
 
@@ -71,11 +70,26 @@ document.getElementById('resetSelectionBtn').addEventListener('click', () => {
     }
 });
 
-document.getElementById('darkModeToggle').addEventListener('click', () => {
-    document.body.classList.toggle('light-mode');
-    const isLight = document.body.classList.contains('light-mode');
-    document.body.style.background = isLight ? "#eef2ff" : "#050811";
-    if (window.currentScene) window.currentScene.background.setHex(isLight ? 0xeef2ff : 0x050811);
+const themeToggle = document.getElementById('darkModeToggle');
+
+function applyTheme(isLight) {
+    document.body.classList.toggle('light-mode', isLight);
+    document.body.style.background = isLight ? '#eef2ff' : '#050811';
+    themeToggle.innerHTML = isLight
+        ? '<i class="fas fa-moon"></i> Dark Mode'
+        : '<i class="fas fa-sun"></i> Light Mode';
+
+    if (window.currentScene) {
+        window.currentScene.background.setHex(isLight ? 0xeef2ff : 0x050811);
+    }
+}
+
+applyTheme(localStorage.getItem('theme') === 'light');
+
+themeToggle.addEventListener('click', () => {
+    const isLight = !document.body.classList.contains('light-mode');
+    applyTheme(isLight);
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
 });
 
 document.getElementById('closeModalBtn').addEventListener('click', () => {

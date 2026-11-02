@@ -1,4 +1,5 @@
 import { latLongToVector3 } from './markers.js';
+import { API_BASE_URL } from './config.js';
 import * as THREE from 'three';
 
 export let connectionCurves = [];
@@ -77,7 +78,7 @@ async function getAnalysis(c) {
     return result;
 }
 
-const API_URL = "https://rpymqbayaa.execute-api.ap-southeast-2.amazonaws.com/prod";
+const API_URL = "/api";
 
 export async function analyzeCountryDynamically(country) {
     const GLOBAL_AVG = window.GLOBAL_AVG || 120;
@@ -85,6 +86,8 @@ export async function analyzeCountryDynamically(country) {
     const householdPct = ((country.household / country.combined) * 100).toFixed(0);
     const retailPct = ((country.retail / country.combined) * 100).toFixed(0);
     const foodPct = ((country.foodService / country.combined) * 100).toFixed(0);
+    const difference = country.combined - GLOBAL_AVG;
+    const comparison = difference > 0 ? 'above' : difference < 0 ? 'below' : 'equal to';
 
     const payload = {
         country: country.country,
@@ -92,23 +95,46 @@ export async function analyzeCountryDynamically(country) {
         householdPct,
         retailPct,
         foodPct,
-        vsGlobal: country.combined - GLOBAL_AVG
+        vsGlobal: difference,
+        comparison
     };
 
     try {
-        const res = await fetch(`${API_URL}/chat`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+        console.log('[AI] Sending country:', country.country);
+        console.log('[AI] Payload:', payload);
+
+        const res = await fetch(`${API_BASE_URL}/analyse-country`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const rawResponse = await res.text();
 
-        const ai = await res.json();
+        console.log(`[AI] ${country.country} status:`, res.status);
+        console.log(`[AI] ${country.country} raw response:`, rawResponse);
+
+        if (!res.ok) {
+            throw new Error(
+                `${country.country} request failed: HTTP ${res.status}`
+            );
+        }
+
+        const cleanText = rawResponse
+            .replace(/^```json\s*/i, '')
+            .replace(/^```\s*/i, '')
+            .replace(/\s*```$/i, '')
+            .trim();
+
+        const responseData = JSON.parse(cleanText);
+
+        console.log(`[AI] ${country.country} parsed response:`, responseData);
 
         return {
-            reason: ai.reason,
-            solution: ai.solution,
+            reason: responseData.reason,
+            solution: responseData.solution,
             householdPct,
             retailPct,
             foodPct
@@ -150,15 +176,24 @@ export async function renderDynamicAnalysis(apiData, charts) {
     charts.barChart = new Chart(charts.ctxBar, {
         type: 'bar',
         data: {
-            labels: ['Total Waste', 'Household', 'Retail', 'Food Service'],
+            labels: [
+                'Total Waste',
+                'Household Waste',
+                'Retail Waste',
+                'Food-Service Waste'
+            ],
             datasets
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#e2e8f0' } }
+            title: {
+                display: true,
+                text: 'Food Waste by Sector (kg/person/year)'
             }
         }
+        },
+        
     });
 
     // =====================
@@ -175,15 +210,24 @@ export async function renderDynamicAnalysis(apiData, charts) {
     charts.radarChart = new Chart(charts.ctxRadar, {
         type: 'radar',
         data: {
-            labels: ['Total Waste', 'Household', 'Retail', 'Food Service'],
+            labels: [
+                'Total Waste',
+                'Household Waste',
+                'Retail Waste',
+                'Food-Service Waste'
+            ],
             datasets: radarDatasets
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#cbd5e1' } }
+            title: {
+                display: true,
+                text: 'Food Waste by Sector (kg/person/year)'
             }
         }
+        },
+        
     });
 
     // =====================
@@ -204,7 +248,7 @@ export async function renderDynamicAnalysis(apiData, charts) {
                     tension: 0.3
                 },
                 {
-                    label: 'Global Average',
+                    label: 'Global Average (kg/person/year)',
                     data: Array(countriesData.length).fill(GLOBAL_AVG),
                     borderColor: '#f97316',
                     borderDash: [5, 5],
@@ -288,11 +332,52 @@ export async function renderDynamicAnalysis(apiData, charts) {
     document.getElementById('solutionAnalysis').innerHTML = solHtml;
     
     // Comprehensive insights
-    document.getElementById('aiInsightText').innerHTML = `
-        <p><strong>📊 Data-Driven Insights</strong><br>
-        ▪ Among selected ${countriesData.length} countries, <strong>${maxCountry.country}</strong> has highest waste (${maxCountry.combined} kg/person/year)<br>
-        ▪ Average waste is <strong>${avgVal} kg/person/year</strong>, ${avgVal > GLOBAL_AVG ? 'above' : 'below'} global average<br>
-        ▪ <strong>${maxCountry.country}</strong> requires priority intervention<br>
-        ▪ <strong>${minCountry.country}</strong> serves as regional benchmark</p>
-    `;
+    const insightResponse = await fetch(
+    `${API_BASE_URL}/comprehensive-insights`,
+    {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            countries: countriesData,
+            globalAvg: GLOBAL_AVG
+        })
+    }
+);
+
+const rawResponse = await insightResponse.text();
+
+console.log('[Comprehensive] HTTP status:', insightResponse.status);
+console.log('[Comprehensive] Raw response:', rawResponse);
+
+if (!insightResponse.ok) {
+    throw new Error(
+        `Comprehensive insight request failed: HTTP ${insightResponse.status}`
+    );
+}
+
+const cleanText = rawResponse
+    .replace(/^\uFEFF/, '')
+    .replace(/^\s*```json\s*/i, '')
+    .replace(/^\s*```\s*/i, '')
+    .replace(/\s*```\s*$/i, '')
+    .trim();
+
+console.log('[Comprehensive] Clean text:', cleanText);
+
+const responseData = JSON.parse(cleanText);
+
+console.log('[Comprehensive] Parsed response:', responseData);
+
+document.getElementById('aiInsightText').innerHTML = `
+    <p><strong>📊 AI Data-Driven Insights</strong></p>
+    <p><strong>Key Pattern 1:</strong> ${responseData.keyPatterns[0]}</p>
+    <p><strong>Key Pattern 2:</strong> ${responseData.keyPatterns[1]}</p>
+    <p><strong>Priority Country: </strong></p>
+    <p><strong>Country:</strong> ${responseData.priorityAreas[0].country}</p>
+    <p><strong>Sector:</strong> ${responseData.priorityAreas[0].sector}</p>
+    <p><strong>Reason:</strong> ${responseData.priorityAreas[0].reason}</p>
+    <p><strong>Recommendation:</strong> ${responseData.recommendation}</p>
+`;
 }

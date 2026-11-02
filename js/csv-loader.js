@@ -9,35 +9,65 @@
  */
 export let foodWasteData = [];
 export let GLOBAL_AVG = 120;
+let countryCoordinates = {};
 
 export async function loadCSVData() {
     try {
-        console.log("CSV LOADER FILE LOADED");
-        
-        const response = await fetch('https://rpymqbayaa.execute-api.ap-southeast-2.amazonaws.com/prod/data');
-        const result = await response.json();
+        const csvUrl = 'https://lr5o45t26g.execute-api.ap-southeast-2.amazonaws.com/get_data';
+        const response = await fetch(csvUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to load CSV: HTTP ${response.status}`);
+        }
 
-        const rawData = result.data;
+        const coordinatesResponse = await fetch('https://2lvlnbjp46.execute-api.ap-southeast-2.amazonaws.com/get_country_coordinates');
+        if (!coordinatesResponse.ok) {
+            throw new Error(`Failed to load country coordinates: HTTP ${coordinatesResponse.status}`);
+        }
+        countryCoordinates = await coordinatesResponse.json();
+
+        const csvText = await response.text();
+        const csvRows = csvText
+            .split(/\r?\n/)
+            .filter(row => row.trim());
+
+        if (csvRows.length < 2) {
+            throw new Error('CSV is empty or contains no data rows');
+        }
+
+        const headers = parseCSVRow(csvRows.shift()).map(header =>
+            header.replace(/^\uFEFF/, '').trim().toLowerCase()
+        );
+        
+        const rawData = csvRows.map(row => {
+            const values = parseCSVRow(row);
+            return Object.fromEntries(
+                headers.map((header, index) => [header, values[index]])
+            );
+        }).filter(item => item.country);
 
         const data = rawData.map(item => {
-            const coords = getCountryCoordinates(item.country);
-            const code = getCountryCode(item.country);
+            const country = item.country;
+            const coords = getCountryCoordinates(item['m49 code'], country);
+            const code = coords.code;
 
             return {
-                country: item.country,
-                combined: Number(item.combined),
-                household: Number(item.household || 0),
-                retail: Number(item.retail || 0),
-                foodService: Number(item.foodService || 0),
+                country,
+                combined: Number(item['combined figures (kg/capita/year)']),
+                household: Number(item['household estimate (kg/capita/year)'] || 0),
+                retail: Number(item['retail estimate (kg/capita/year)'] || 0),
+                foodService: Number(item['food service estimate (kg/capita/year)'] || 0),
 
-                // 🔥 ADD BACK MISSING FIELDS
                 lat: coords.lat,
                 lon: coords.lon,
                 code: code,
                 flagUrl: `https://flagcdn.com/w80/${code}.png`,
-                region: getRegion(item.country)
+                region: item.region || getRegion(country)
             };
-        });
+        }).filter(item => Number.isFinite(item.combined));
+
+        if (!data.length) {
+            throw new Error('CSV rows could not be mapped to dashboard data');
+        }
 
         GLOBAL_AVG = Math.round(
             data.reduce((s, d) => s + d.combined, 0) / data.length
@@ -50,8 +80,8 @@ export async function loadCSVData() {
         return data;
 
     } catch (err) {
-        console.error(err);
-        return [];
+        console.error('[CSV] Failed to load data:', err);
+        throw err;
     }
 }
 
@@ -81,7 +111,20 @@ function parseCSVRow(row) {
 /**
  * Get country coordinates (latitude, longitude)
  */
-function getCountryCoordinates(countryName) {
+function getCountryCoordinates(m49Code, countryName) {
+    const coordinates = countryCoordinates[String(m49Code)];
+
+    if (coordinates) {
+        return {
+            lat: coordinates.lat,
+            lon: coordinates.lon,
+            code: coordinates.code
+        };
+    }
+
+    console.warn(`[Coordinates] Missing coordinates for ${countryName} (${m49Code})`);
+    return { lat: 0, lon: 0 };
+/*
     const coordsMap = {
         'Afghanistan': { lat: 33.9, lon: 66.0 },
         'Albania': { lat: 41.2, lon: 20.2 },
@@ -129,6 +172,7 @@ function getCountryCoordinates(countryName) {
     if (coordsMap[normalized]) return coordsMap[normalized];
     
     return { lat: (Math.random() * 140 - 70), lon: (Math.random() * 360 - 180) };
+*/
 }
 
 /**
@@ -166,17 +210,4 @@ function getRegion(countryName) {
         'Australia': 'Oceania', 'Saudi Arabia': 'Middle East'
     };
     return regionMap[countryName] || 'Other';
-}
-
-/**
- * Fallback data if CSV fails to load
- */
-function getFallbackData() {
-    return [
-        { country: "United States", combined: 139, household: 59, retail: 16, foodService: 64, lat: 39.8, lon: -98.5, code: "us", flagUrl: "https://flagcdn.com/w80/us.png", region: "North America" },
-        { country: "China", combined: 126, household: 64, retail: 16, foodService: 46, lat: 35.0, lon: 105.0, code: "cn", flagUrl: "https://flagcdn.com/w80/cn.png", region: "Asia" },
-        { country: "India", combined: 94, household: 50, retail: 16, foodService: 28, lat: 20.5, lon: 78.9, code: "in", flagUrl: "https://flagcdn.com/w80/in.png", region: "Asia" },
-        { country: "Brazil", combined: 104, household: 60, retail: 16, foodService: 28, lat: -14.2, lon: -51.9, code: "br", flagUrl: "https://flagcdn.com/w80/br.png", region: "Latin America" },
-        { country: "Germany", combined: 102, household: 75, retail: 6, foodService: 21, lat: 51.1, lon: 10.4, code: "de", flagUrl: "https://flagcdn.com/w80/de.png", region: "Europe" }
-    ];
 }

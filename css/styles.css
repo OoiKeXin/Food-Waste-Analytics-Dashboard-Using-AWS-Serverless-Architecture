@@ -11,6 +11,33 @@ body {
     color: #f1f5f9;
 }
 
+body.light-mode {
+    background: #eef2ff !important;
+    color: #1e293b;
+}
+
+body.light-mode .top-bar,
+body.light-mode .selection-panel,
+body.light-mode .board-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(30, 41, 59, 0.12);
+}
+
+body.light-mode .btn {
+    background: rgba(30, 41, 59, 0.06);
+    border-color: rgba(30, 41, 59, 0.15);
+    color: #1e293b;
+}
+
+body.light-mode .chart-box {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(30, 41, 59, 0.12);
+}
+
+body.light-mode .data-table th {
+    background: rgba(139, 92, 246, 0.15);
+}
+
 #canvas-container {
     position: absolute;
     top: 0;

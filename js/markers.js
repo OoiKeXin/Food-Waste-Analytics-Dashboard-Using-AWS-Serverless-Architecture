@@ -38,7 +38,7 @@ function createFlagSprite(country) {
     const texture = new THREE.CanvasTexture(canvas);
     const material = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(0.22, 0.26, 1);
+    sprite.scale.set(0.08, 0.10, 1);
     sprite.userData = { country: country.country, data: country };
     sprite.position.copy(latLongToVector3(country.lat, country.lon, 1.21));
     
@@ -113,10 +113,10 @@ export function highlightSelectedMarkers(selectedCountries) {
     allSprites.forEach(sprite => {
         const isSelected = selectedCountries.includes(sprite.userData.country);
         if (isSelected) {
-            sprite.scale.setScalar(0.27);
+            sprite.scale.set(0.18, 0.20, 1);
             sprite.material.opacity = 1;
         } else if (sprite.parent) {
-            sprite.scale.setScalar(0.22);
+            sprite.scale.set(0.14, 0.16, 1);
             sprite.material.opacity = 0.95;
         }
     });
